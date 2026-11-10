@@ -31,28 +31,28 @@ A high-performance real-time A/B benchmarking arena and lightweight training pip
 
 ## 🖥️ Live Side-by-Side Arena
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│  LoCo Arena [demo mode]                       9.9 vs 9.11 · Strawberry · Bat & Ball... │
-├───────────────────────────────────────────┬────────────────────────────────────────────┤
-│  A · Baseline (DeepSeek-R1-Distill-7B)    │  B · LoCo (LoCo-7B)                       │
-│  [Still deliberating... +342 tokens]     │  [✓ Finished — 3.82s]                      │
-│                                           │                                            │
-│  Elapsed: 8.412s   TTFT: 420ms   32 tok/s │  Elapsed: 3.821s   TTFT: 240ms   41 tok/s  │
-│  Think: 684 tok  |  Answer: 48 tok        │  Think: 288 tok  |  Answer: 46 tok         │
-│  [████████████████████████░░] 732 tokens  │  [████████░░] 334 tokens                   │
-│                                           │                                            │
-│  Thinking:                                │  Thinking:                                 │
-│  "Let me verify if 9.11 is greater...     │  "Both numbers have integer part 9.        │
-│   Wait, let me double-check place values. │   Comparing tenths place: 9.90 > 9.11.     │
-│   Could this be version numbering?        │   Hence 9.9 is greater."                   │
-│   Let me re-verify 9.90 - 9.11..."        │                                            │
-│                                           │  Answer:                                   │
-│  Answer:                                  │  The greater number is 9.9.                │
-│  (Waiting for thinking to finish...)      │  Final answer: \boxed{9.9}                 │
-├───────────────────────────────────────────┴────────────────────────────────────────────┤
-│  ⚡ Summary: -57.9% thinking tokens · -54.4% total tokens · -54.6% latency · Winner: LoCo│
-└────────────────────────────────────────────────────────────────────────────────────────┘
+```text
++--------------------------------------------------------------------------------------+
+| LoCo Arena [demo mode]                       9.9 vs 9.11 * Strawberry * Bat & Ball...|
++-------------------------------------------+------------------------------------------+
+| A - Baseline (DeepSeek-R1-Distill-7B)     | B - LoCo (LoCo-7B)                       |
+| [Still deliberating... +342 tokens]       | [DONE Finished - 3.82s]                  |
+|                                           |                                          |
+| Elapsed: 8.412s   TTFT: 420ms   32 tok/s  | Elapsed: 3.821s   TTFT: 240ms   41 tok/s |
+| Think: 684 tok  |  Answer: 48 tok         | Think: 288 tok  |  Answer: 46 tok        |
+| [========================..] 732 tokens   | [========................] 334 tokens    |
+|                                           |                                          |
+| Thinking:                                 | Thinking:                                |
+| "Let me verify if 9.11 is greater...      | "Both numbers have integer part 9.       |
+|  Wait, let me double-check place values.  |  Comparing tenths place: 9.90 > 9.11.    |
+|  Could this be version numbering?         |  Hence 9.9 is greater."                  |
+|  Let me re-verify 9.90 - 9.11..."         |                                          |
+|                                           | Answer:                                  |
+| Answer:                                   | The greater number is 9.9.               |
+| (Waiting for thinking to finish...)       | Final answer: \boxed{9.9}                |
++-------------------------------------------+------------------------------------------+
+| * Summary: -57.9% think tok | -54.4% total tok | -54.6% latency | Winner: LoCo       |
++--------------------------------------------------------------------------------------+
 ```
 
 ---
