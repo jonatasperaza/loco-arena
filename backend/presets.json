@@ -1,0 +1,42 @@
+[
+  {
+    "id": "compare-911-99",
+    "title": "Which is bigger: 9.11 or 9.9?",
+    "category": "math",
+    "prompt": "Which number is greater: 9.11 or 9.9? State the larger number and explain briefly.",
+    "expected_answer": "9.9 is greater than 9.11. In the tenths place, 9 is greater than 1 (9.90 > 9.11). Final answer: \\boxed{9.9}",
+    "why_overthinks": "Models often hallucinate string comparison rules, software version semantics (v9.11 > v9.9), or get stuck in cyclic verification comparing fractional expansions."
+  },
+  {
+    "id": "strawberry-r-count",
+    "title": "How many 'r's in 'strawberry'?",
+    "category": "logic",
+    "prompt": "How many times does the letter 'r' appear in the word 'strawberry'? Count carefully.",
+    "expected_answer": "The letter 'r' appears 3 times in 'strawberry' (st-r-aw-b-e-r-r-y: position 3, 8, and 9). Final answer: \\boxed{3}",
+    "why_overthinks": "Because subword tokenizers merge 'strawberry' into chunks like ['straw', 'berry'], the model cannot directly inspect characters and enters paranoid token-reconstruction loops."
+  },
+  {
+    "id": "bat-and-ball",
+    "title": "The Bat and Ball Problem",
+    "category": "math",
+    "prompt": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much does the ball cost in cents?",
+    "expected_answer": "Let the ball cost x. Then x + (x + 1.00) = 1.10 => 2x = 0.10 => x = 0.05 ($0.05 or 5 cents). Final answer: \\boxed{5}",
+    "why_overthinks": "Although the equation is trivial (2x + 1.00 = 1.10), reasoning models often spawn multi-stage self-doubt loops questioning the intuitive answer of 10 cents vs 5 cents multiple times."
+  },
+  {
+    "id": "powers-mod-7",
+    "title": "Remainder of 2^2025 mod 7",
+    "category": "math",
+    "prompt": "Find the remainder when 2^2025 is divided by 7.",
+    "expected_answer": "By Fermat's Little Theorem or cycling powers: 2^1 = 2, 2^2 = 4, 2^3 = 8 = 1 (mod 7). Since 2025 is divisible by 3 (2025 = 3 * 675), 2^2025 = (2^3)^675 = 1^675 = 1 (mod 7). Final answer: \\boxed{1}",
+    "why_overthinks": "Baseline R1 computes long chains of binary exponentiation, double checks modular arithmetic rules across multiple theorems (Euler vs Fermat), and re-evaluates the cycle multiple times."
+  },
+  {
+    "id": "knights-and-knaves",
+    "title": "Knights and Knaves Island",
+    "category": "logic",
+    "prompt": "On an island, knights always tell the truth and knaves always lie. You meet two inhabitants, A and B. Inhabitant A says: 'At least one of us is a knave.' What are A and B?",
+    "expected_answer": "If A were a knave, A's statement ('at least one is a knave') would be false, meaning neither is a knave (both knights), contradicting that A is a knave. Therefore, A must be a knight and tells the truth. Since A is a knight and at least one is a knave, B must be a knave. Final answer: \\boxed{\\text{A is a knight, B is a knave}}",
+    "why_overthinks": "The self-referential paradox setup leads to repeated truth-table enumeration and circular branch validation before finally committing to the deduction."
+  }
+]

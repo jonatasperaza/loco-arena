@@ -1,0 +1,30 @@
+# =============================================================================
+# Baseline: DeepSeek-R1-Distill-Qwen-7B for Ollama
+#
+#   ollama pull deepseek-r1:7b
+#   ollama create r1-baseline -f ollama/Modelfile.baseline
+#
+# Uses the exact same chat template and sampling parameters as ollama/Modelfile
+# so the arena compares the weights, not the prompt formatting. The "<think>\n"
+# pre-fill matches the official HF chat template; no SYSTEM prompt (DeepSeek
+# recommends instructions in the user turn). The template avoids Ollama's
+# `.Thinking` variables so the raw <think>...</think> text arrives in `content`.
+# =============================================================================
+
+FROM deepseek-r1:7b
+
+TEMPLATE """<｜begin▁of▁sentence｜>{{- if .System }}{{ .System }}{{ end }}
+{{- range $i, $_ := .Messages }}
+{{- $last := eq (len (slice $.Messages $i)) 1 }}
+{{- if eq .Role "user" }}<｜User｜>{{ .Content }}
+{{- else if eq .Role "assistant" }}<｜Assistant｜>{{ .Content }}{{- if not $last }}<｜end▁of▁sentence｜>{{- end }}
+{{- end }}
+{{- if and $last (ne .Role "assistant") }}<｜Assistant｜><think>
+{{ end }}
+{{- end }}"""
+
+PARAMETER temperature 0.6
+PARAMETER top_p 0.95
+PARAMETER num_ctx 8192
+PARAMETER stop "<｜end▁of▁sentence｜>"
+PARAMETER stop "<｜User｜>"

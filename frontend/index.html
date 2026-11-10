@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LoCo Arena — Think less, locally</title>
+  <meta name="description" content="Side-by-side A/B arena: DeepSeek-R1-Distill-Qwen-7B vs LoCo-7B. Same answer, fewer reasoning tokens." />
+  <meta name="color-scheme" content="dark" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="h-full bg-[#07090c] text-zinc-200 font-sans antialiased">
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <div class="relative mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+    <!-- Header -->
+    <header class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="logo-mark" aria-hidden="true"><span></span><span></span></span>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">LoCo Arena</h1>
+          <span id="mode-badge" class="mode-badge" data-mode="unknown" title="Backend mode">
+            <span class="dot"></span><span id="mode-text">connecting…</span>
+          </span>
+        </div>
+        <p class="mt-1.5 text-sm sm:text-[15px] text-zinc-400">
+          Think less, locally — same answer, <span class="text-emerald-300 font-semibold">~45% fewer reasoning tokens</span>
+        </p>
+      </div>
+      <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs font-mono text-zinc-500 md:text-right md:justify-items-end">
+        <dt class="text-amber-400/80">baseline</dt><dd id="baseline-model-name" class="truncate max-w-[22rem] text-zinc-300">—</dd>
+        <dt class="text-emerald-400/90">loco</dt><dd id="loco-model-name" class="truncate max-w-[22rem] text-zinc-300">—</dd>
+      </dl>
+    </header>
+
+    <!-- Prompt -->
+    <section class="mt-6 card p-4 sm:p-5" aria-label="Prompt">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="label">Presets</h2>
+        <span id="preset-hint" class="text-xs text-zinc-500 hidden sm:block"></span>
+      </div>
+      <div id="presets" class="mt-2 flex flex-wrap gap-2" role="list">
+        <span class="text-xs text-zinc-500">Loading presets…</span>
+      </div>
+
+      <label for="prompt" class="label mt-4 block">Prompt</label>
+      <textarea id="prompt" rows="4" maxlength="8000" spellcheck="false"
+        class="prompt-input mt-2 w-full resize-y rounded-lg px-3.5 py-3 text-[15px] leading-relaxed"
+        placeholder="Ask a math or logic question… (Ctrl/⌘ + Enter to run)"></textarea>
+
+      <div class="mt-3 flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-2">
+          <label for="max-tokens" class="label">max_tokens</label>
+          <input id="max-tokens" type="number" min="16" max="32768" step="64" value="4096"
+            class="num-input w-28 rounded-md px-2.5 py-1.5 text-sm font-mono tabular-nums" />
+        </div>
+        <span id="char-count" class="text-xs font-mono text-zinc-500 tabular-nums">0 / 8000</span>
+        <div class="ml-auto flex items-center gap-2">
+          <kbd class="hidden sm:inline-flex kbd">Ctrl</kbd><span class="hidden sm:inline text-zinc-600 text-xs">+</span><kbd class="hidden sm:inline-flex kbd">Enter</kbd>
+          <button id="stop-btn" type="button" class="btn btn-ghost" disabled>
+            <svg viewBox="0 0 16 16" class="h-3.5 w-3.5" aria-hidden="true"><rect x="3" y="3" width="10" height="10" rx="1.5" fill="currentColor"/></svg>
+            Stop
+          </button>
+          <button id="run-btn" type="button" class="btn btn-primary">
+            <svg viewBox="0 0 16 16" class="h-3.5 w-3.5" aria-hidden="true"><path d="M4 2.8v10.4a.6.6 0 0 0 .9.5l8.4-5.2a.6.6 0 0 0 0-1L4.9 2.3a.6.6 0 0 0-.9.5Z" fill="currentColor"/></svg>
+            Run
+          </button>
+        </div>
+      </div>
+      <p id="global-error" class="mt-3 hidden text-sm text-rose-300" role="alert"></p>
+    </section>
+
+    <!-- Summary -->
+    <section id="summary" class="summary mt-5 hidden" aria-live="polite" aria-label="Run summary">
+      <div class="summary-inner">
+        <div class="stat">
+          <div class="stat-value"><span data-count="think_token_savings_pct">—</span><span class="unit">%</span></div>
+          <div class="stat-label">fewer thinking tokens</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value"><span data-count="total_token_savings_pct">—</span><span class="unit">%</span></div>
+          <div class="stat-label">fewer total tokens</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value"><span data-count="time_savings_pct">—</span><span class="unit">%</span></div>
+          <div class="stat-label">less wall-clock time</div>
+        </div>
+        <div class="stat stat-winner">
+          <div class="stat-value" id="winner-value">—</div>
+          <div class="stat-label">finished first</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Arena -->
+    <main class="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-5" aria-label="Arena">
+      <!-- Baseline panel -->
+      <article id="panel-baseline" class="panel" data-model="baseline" data-status="idle" aria-labelledby="h-baseline">
+        <div class="panel-banner deliberating-banner" aria-live="polite">
+          <span class="pulse-dot"></span>
+          <span data-field="delib-label">Still deliberating…</span>
+          <span class="font-mono tabular-nums"><span data-field="extra-tokens">+0</span> tokens</span>
+          <span class="font-mono tabular-nums opacity-80" data-field="extra-time">+0.0s</span>
+        </div>
+        <header class="panel-head">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="tag tag-baseline">A · Baseline</span>
+              <span class="status-pill" data-field="status">idle</span>
+            </div>
+            <h3 id="h-baseline" class="mt-1.5 text-[15px] font-semibold text-zinc-100 truncate" data-field="model-name">DeepSeek-R1-Distill-Qwen-7B</h3>
+          </div>
+          <div class="stopwatch" data-field="stopwatch" aria-label="Elapsed time">0.000<span class="unit">s</span></div>
+        </header>
+
+        <div class="metrics">
+          <div class="metric"><span class="metric-label">TTFT</span><span class="metric-value" data-field="ttft">—</span></div>
+          <div class="metric"><span class="metric-label">tok/s</span><span class="metric-value" data-field="tps">—</span></div>
+          <div class="metric"><span class="metric-label">think</span><span class="metric-value think-c" data-field="think-tokens">0</span></div>
+          <div class="metric"><span class="metric-label">answer</span><span class="metric-value answer-c" data-field="answer-tokens">0</span></div>
+        </div>
+
+        <div class="bar-wrap">
+          <div class="bar" role="img" data-field="bar" aria-label="Think vs answer tokens">
+            <div class="bar-think" data-field="bar-think"></div>
+            <div class="bar-answer" data-field="bar-answer"></div>
+          </div>
+          <div class="bar-legend">
+            <span><i class="sw sw-think"></i>think</span>
+            <span><i class="sw sw-answer"></i>answer</span>
+            <span class="ml-auto font-mono tabular-nums" data-field="total-tokens">0 tok</span>
+          </div>
+        </div>
+
+        <details class="box think-box" open>
+          <summary><span class="label">Thinking</span><span class="caret" aria-hidden="true"></span></summary>
+          <div class="box-body think-text" data-field="think-text" tabindex="0" aria-label="Thinking stream"></div>
+        </details>
+
+        <div class="box answer-box">
+          <div class="box-title"><span class="label">Answer</span></div>
+          <div class="box-body answer-text" data-field="answer-text" tabindex="0" aria-label="Answer stream"></div>
+        </div>
+
+        <p class="panel-error" data-field="error" role="alert"></p>
+      </article>
+
+      <!-- LoCo panel -->
+      <article id="panel-loco" class="panel" data-model="loco" data-status="idle" aria-labelledby="h-loco">
+        <div class="panel-banner finished-banner" aria-live="polite">
+          <svg viewBox="0 0 16 16" class="h-4 w-4" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Finished — <span class="font-mono tabular-nums" data-field="finished-time">0.0s</span></span>
+          <span class="opacity-80 hidden sm:inline" data-field="finished-note">· baseline still thinking</span>
+        </div>
+        <header class="panel-head">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="tag tag-loco">B · LoCo</span>
+              <span class="status-pill" data-field="status">idle</span>
+            </div>
+            <h3 id="h-loco" class="mt-1.5 text-[15px] font-semibold text-zinc-100 truncate" data-field="model-name">LoCo-7B</h3>
+          </div>
+          <div class="stopwatch" data-field="stopwatch" aria-label="Elapsed time">0.000<span class="unit">s</span></div>
+        </header>
+
+        <div class="metrics">
+          <div class="metric"><span class="metric-label">TTFT</span><span class="metric-value" data-field="ttft">—</span></div>
+          <div class="metric"><span class="metric-label">tok/s</span><span class="metric-value" data-field="tps">—</span></div>
+          <div class="metric"><span class="metric-label">think</span><span class="metric-value think-c" data-field="think-tokens">0</span></div>
+          <div class="metric"><span class="metric-label">answer</span><span class="metric-value answer-c" data-field="answer-tokens">0</span></div>
+        </div>
+
+        <div class="bar-wrap">
+          <div class="bar" role="img" data-field="bar" aria-label="Think vs answer tokens">
+            <div class="bar-think" data-field="bar-think"></div>
+            <div class="bar-answer" data-field="bar-answer"></div>
+          </div>
+          <div class="bar-legend">
+            <span><i class="sw sw-think"></i>think</span>
+            <span><i class="sw sw-answer"></i>answer</span>
+            <span class="ml-auto font-mono tabular-nums" data-field="total-tokens">0 tok</span>
+          </div>
+        </div>
+
+        <details class="box think-box" open>
+          <summary><span class="label">Thinking</span><span class="caret" aria-hidden="true"></span></summary>
+          <div class="box-body think-text" data-field="think-text" tabindex="0" aria-label="Thinking stream"></div>
+        </details>
+
+        <div class="box answer-box">
+          <div class="box-title"><span class="label">Answer</span></div>
+          <div class="box-body answer-text" data-field="answer-text" tabindex="0" aria-label="Answer stream"></div>
+        </div>
+
+        <p class="panel-error" data-field="error" role="alert"></p>
+      </article>
+    </main>
+
+    <footer class="mt-8 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-600">
+      <span>Both models run concurrently on the same prompt. Timers are measured client-side and reconciled with server metrics.</span>
+      <span class="font-mono">loco-arena · Apache-2.0</span>
+    </footer>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

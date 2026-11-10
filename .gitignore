@@ -1,0 +1,47 @@
+# Secrets / local config
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Training artifacts
+training/outputs/
+training/runs/
+training/checkpoints/
+training/merged/
+outputs/
+checkpoints/
+wandb/
+*.safetensors
+*.bin
+*.pt
+*.gguf
+llama.cpp/
+
+# Ollama model weights produced locally
+ollama/*.gguf
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+training/out/
+out/
