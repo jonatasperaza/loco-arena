@@ -91,7 +91,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     g.add_argument("--lora-alpha", type=int, default=32)
     g.add_argument("--lora-dropout", type=float, default=0.05)
     g.add_argument("--target-modules", nargs="+",
-                   default=["q_proj", "v_proj", "k_proj", "o_proj"],
+                   default=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
                    help="Module names to adapt (add gate_proj up_proj down_proj for more capacity).")
 
     g = p.add_argument_group("DPO / optimization")
